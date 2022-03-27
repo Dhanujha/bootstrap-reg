@@ -18,6 +18,20 @@ interface InputState {
   mobile?: string;
 }
 
+interface ValidationValueOptions {
+  value: boolean | RegExp;
+  message: string;
+}
+interface ValidationOptions {
+  required?: ValidationValueOptions;
+  pattern?: ValidationValueOptions;
+}
+
+type ValidateOutput = {
+  value: boolean;
+  message?: string;
+};
+
 const TEXT_TYPE_FIELDS: (keyof InputState)[] = [
   "name",
   "email",
@@ -27,14 +41,10 @@ const TEXT_TYPE_FIELDS: (keyof InputState)[] = [
   "country",
 ];
 
-interface ValidationValueOptions {
-  value: boolean | RegExp;
-  message: string;
-}
-interface ValidationOptions {
-  required?: ValidationValueOptions;
-  pattern?: ValidationValueOptions;
-}
+const DEFAULT_INPUT_STATE: InputState = {
+  name: "",
+  email: "",
+};
 
 const validationSchema: Partial<Record<keyof InputState, ValidationOptions>> = {
   email: {
@@ -62,17 +72,9 @@ const validationSchema: Partial<Record<keyof InputState, ValidationOptions>> = {
   },
 };
 
-type ValidateOutput = {
-  value: boolean;
-  message?: string;
-};
-
 function App() {
-  const [input, setInput] = useState<InputState>({
-    name: "",
-    email: "",
-  });
 
+  const [input, setInput] = useState<InputState>(DEFAULT_INPUT_STATE);
   const [isTouched, setIsTouched] = useState(false);
 
   function validate(field: keyof InputState): ValidateOutput {
