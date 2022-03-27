@@ -1,12 +1,12 @@
-import React, { useState } from "react";
-import "bootstrap/dist/css/bootstrap.css";
-import "./App.css";
-import Heading from "./components/Heading";
+import React from "react";
 import Card from "./components/Card";
 import Container from "./components/Container";
+import Heading from "./components/Heading";
+import TextArea from "./components/TextArea";
+import "bootstrap/dist/css/bootstrap.css";
+import "./App.css";
 import Input from "./components/Input";
 import { toTitleCase } from "./utils/string";
-import TextArea from "./components/TextArea";
 
 interface InputState {
   name: string;
@@ -16,15 +16,6 @@ interface InputState {
   state?: string;
   city?: string;
   mobile?: string;
-}
-
-interface ValidationValueOptions {
-  value: boolean | RegExp;
-  message: string;
-}
-interface ValidationOptions {
-  required?: ValidationValueOptions;
-  pattern?: ValidationValueOptions;
 }
 
 type ValidateOutput = {
@@ -42,60 +33,18 @@ const TEXT_TYPE_FIELDS: (keyof InputState)[] = [
 ];
 
 const DEFAULT_INPUT_STATE: InputState = {
-  name: "",
+  city: "",
+  country: "",
   email: "",
-};
-
-const validationSchema: Partial<Record<keyof InputState, ValidationOptions>> = {
-  email: {
-    pattern: {
-      message: "Please enter a valid email",
-      value: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-    },
-    required: {
-      message: "Email is required",
-      value: true,
-    },
-  },
-  name: {
-    required: {
-      message: "Name is Required",
-      value: true,
-    },
-  },
-  mobile: {
-    pattern: {
-      value: /^\+\d{1,3} \d{9,10}$/,
-      message:
-        "Should contain 9 - 10 digit number, prefixed by + and country code upto 4 digit. Eg, +91 1234567890",
-    },
-  },
+  message: "",
+  mobile: "",
+  name: "",
+  state: "",
 };
 
 function App() {
-
-  const [input, setInput] = useState<InputState>(DEFAULT_INPUT_STATE);
-  const [isTouched, setIsTouched] = useState(false);
-
-  function validate(field: keyof InputState): ValidateOutput {
-    if (isTouched) {
-      const fieldSchema = validationSchema[field];
-      const currentValue = input[field];
-      if (fieldSchema?.required?.value && !currentValue) {
-        return { message: fieldSchema?.required?.message, value: true };
-      }
-      if (
-        fieldSchema?.pattern?.value &&
-        currentValue &&
-        !(fieldSchema?.pattern?.value as RegExp).test(currentValue)
-      ) {
-        return { message: fieldSchema?.pattern?.message, value: true };
-      }
-    }
-    return {
-      value: false,
-    };
-  }
+  const [input, setInput] = React.useState<InputState>(DEFAULT_INPUT_STATE);
+  const [isTouched, setIsTouched] = React.useState(false);
 
   function handleChange(field: keyof InputState, value: string) {
     setInput({
@@ -104,55 +53,113 @@ function App() {
     });
   }
 
+  function reset() {
+    setIsTouched(false);
+    setInput(DEFAULT_INPUT_STATE);
+  }
+
+  function validate(field: keyof InputState): ValidateOutput {
+    if (!isTouched) return { value: true, message: "" };
+    switch (field) {
+      case "email":
+        return validateEmail();
+      case "mobile":
+        return validateMobile();
+      case "name":
+        return validateName();
+      default:
+        return {
+          value: true,
+          message: "",
+        };
+    }
+  }
+
+  function validateEmail(): ValidateOutput {
+    if (!input.email) {
+      return { value: false, message: "Email is required" };
+    }
+    if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(input.email)) {
+      return { value: false, message: "Email is not valid" };
+    }
+    return { value: true, message: "" };
+  }
+
+  function validateName(): ValidateOutput {
+    if (!input.name) {
+      return { value: false, message: "Name is required" };
+    }
+    return { value: true, message: "" };
+  }
+
+  function validateMobile(): ValidateOutput {
+    if (input?.mobile && !/^\+\d{1,3} \d{9,10}$/.test(input.mobile)) {
+      return {
+        value: false,
+        message:
+          "Should contain 9 - 10 digit number, prefixed by + and country code upto 4 digit. Eg, +91 1234567890",
+      };
+    }
+    return { value: true, message: "" };
+  }
+
+  function validateAll(): boolean {
+    return (
+      validateEmail().value && validateMobile().value && validateName().value
+    );
+  }
+
   return (
-    <Container>
-      <Card>
-        <Heading heading="Registration Info" />
+    <>
+      <Container>
+        <Card>
+          <Heading heading="Registration Info" />
 
-        <form
-          className="px-md-2"
-          onClick={(event) => {
-            event.preventDefault();
-          }}
-        >
-          {TEXT_TYPE_FIELDS.map((field) => {
-            return (
-              <Input
-                type={field === "email" ? "email" : "text"}
-                label={toTitleCase(field)}
-                id={field}
-                key={field}
-                error={validate(field).value}
-                errorMessage={validate(field)?.message}
-                value={input?.[field]}
-                onChange={(event) => {
-                  handleChange(field, event.target.value);
-                }}
-              />
-            );
-          })}
+          <form
+            className=""
+            onSubmit={(event) => {
+              event.preventDefault();
 
-          <TextArea
-            id="message"
-            label="Message"
-            onChange={(event) => {
-              handleChange("message", event.target.value);
-            }}
-            value={input?.message}
-          />
-
-          <button
-            type="submit"
-            className="btn btn-success btn-lg mb-1"
-            onClick={() => {
               setIsTouched(true);
+              if (validateAll()) {
+                alert("Submitted");
+                reset();
+              }
             }}
           >
-            Submit
-          </button>
-        </form>
-      </Card>
-    </Container>
+            {TEXT_TYPE_FIELDS.map((field) => {
+              return (
+                <Input
+                  type={field === "email" ? "email" : "text"}
+                  label={toTitleCase(field)}
+                  id={field}
+                  key={field}
+                  error={!validate(field).value}
+                  errorMessage={validate(field)?.message}
+                  value={input?.[field]}
+                  onChange={(event) => {
+                    handleChange(field, event.target.value);
+                  }}
+                />
+              );
+            })}
+
+            <TextArea
+              id="message"
+              label="Message"
+              onChange={(event) => {
+                handleChange("message", event.target.value);
+              }}
+              value={input?.message}
+            />
+
+            <button type="submit" className="btn btn-success btn-lg mb-1">
+              Submit
+            </button>
+          </form>
+        </Card>
+      </Container>
+    </>
   );
 }
 

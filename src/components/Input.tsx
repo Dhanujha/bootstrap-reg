@@ -23,7 +23,7 @@ function Input(props: InputProps): JSX.Element {
     value,
   } = props;
   return (
-    <div className="form-outline mb-4">
+    <div className="form-outline mb-3">
       <label className="form-label" htmlFor={id}>
         {label}
       </label>
