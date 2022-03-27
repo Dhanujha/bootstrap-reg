@@ -79,7 +79,7 @@ function App() {
     if (!input.email) {
       return { value: false, message: "Email is required" };
     }
-    if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(input.email)) {
+    if (!/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(input.email)) {
       return { value: false, message: "Email is not valid" };
     }
     return { value: true, message: "" };
