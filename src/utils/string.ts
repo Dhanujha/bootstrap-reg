@@ -3,5 +3,5 @@ export function toTitleCase(str: string) {
 }
 
 export function validateRegext(str: string) {
-  return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(str);
+  return /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(str);
 }
